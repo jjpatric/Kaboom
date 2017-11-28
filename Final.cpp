@@ -9,6 +9,11 @@
 #define SD_CS 6
 
 Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC);
+
+#define DISPLAY_WIDTH  320
+#define DISPLAY_HEIGHT 240
+
+
 // joystick pins
 #define JOY_VERT_ANALOG A1
 #define JOY_HORIZ_ANALOG A0
@@ -23,23 +28,25 @@ Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC);
 #define MAGENTA 0xF81F
 #define YELLOW 0xFFE0
 #define WHITE 0xFFFF
+#define GREY 0x8410
 
 #define CURSOR_SIZE_HEIGHT 36
 #define CURSOR_SIZE_WIDTH 27
 
 
-#define TFT_WIDTH 240
-#define TFT_HEIGHT 320
+
 
 
 void setup(){
-	init();
-	Serial.begin(9600);
+init();
+Serial.begin(9600);
 	tft.begin();
 	pinMode(JOY_SEL, INPUT);
-	tft.setRotation(-1);
+	tft.setRotation(3);
 	tft.setTextWrap(false);
+tft.fillScreen(GREEN);
 
+tft.fillRect(0, 0, DISPLAY_WIDTH, 48, GREY);
 
 }
 
@@ -47,7 +54,8 @@ void setup(){
 
 
 int main(){
-	setup();
+setup();
+
 
 
 
