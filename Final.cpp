@@ -19,6 +19,10 @@ Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC);
 #define JOY_HORIZ_ANALOG A0
 #define JOY_SEL 2
 
+// constants for the joystick
+#define JOY_DEADZONE 64
+#define JOY_CENTRE 512
+#define JOY_STEPS_PER_PIXEL 64
 //some colors for my artiques
 #define BLACK 0x0000
 #define BLUE 0x001F
@@ -50,12 +54,68 @@ tft.fillRect(0, 0, DISPLAY_WIDTH, 48, GREY);
 
 }
 
+bool startmenu(){
+bool value = 0;
+
+
+tft.setCursor(90, 90);
+tft.setTextColor(WHITE, MAGENTA);
+tft.setTextSize(2);
+tft.setTextWrap(false);
+tft.print("1 Player Mode");
+
+tft.setCursor(90, 120);
+tft.setTextColor(WHITE, GREEN);
+tft.setTextSize(2);
+tft.setTextWrap(false);
+tft.print("Head To Head!!");
+
+while (true){
+int Yvalue = analogRead(JOY_VERT_ANALOG);
+Serial.println(Yvalue);
+
+if (Yvalue > JOY_CENTRE + JOY_DEADZONE) {
+	tft.setCursor(90, 90);
+	tft.setTextColor(WHITE, GREEN);
+	tft.setTextSize(2);
+	tft.setTextWrap(false);
+	tft.print("1 Player Mode");
+
+	tft.setCursor(90, 120);
+	tft.setTextColor(WHITE, MAGENTA);
+	tft.setTextSize(2);
+	tft.setTextWrap(false);
+	tft.print("Head To Head!!");
+
+value = 1;
+}
+
+if (Yvalue < JOY_CENTRE - JOY_DEADZONE) {
+
+	tft.setCursor(90, 90);
+	tft.setTextColor(WHITE, MAGENTA);
+	tft.setTextSize(2);
+	tft.setTextWrap(false);
+	tft.print("1 Player Mode");
+
+	tft.setCursor(90, 120);
+	tft.setTextColor(WHITE, GREEN);
+	tft.setTextSize(2);
+	tft.setTextWrap(false);
+	tft.print("Head To Head!!");
+	value = 0;
+}
 
 
 
+
+}
+return 1;
+}
 int main(){
 setup();
 
+bool startval = startmenu();
 
 
 
