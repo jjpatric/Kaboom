@@ -33,8 +33,8 @@ Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC);
 
 
 void setup(){
-init();
-Serial.begin(9600);
+	init();
+	Serial.begin(9600);
 	tft.begin();
 	pinMode(JOY_SEL, INPUT);
 	tft.setRotation(-1);
@@ -47,7 +47,7 @@ Serial.begin(9600);
 
 
 int main(){
-setup();
+	setup();
 
 
 
