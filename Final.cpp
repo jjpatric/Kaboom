@@ -54,10 +54,18 @@ tft.fillRect(0, 0, DISPLAY_WIDTH, 48, GREY);
 
 }
 
+//function for the main menu. using the joystick, when 1 player is selected,
+//returns 0. When Head to head is selected, returns 1
 bool startmenu(){
 bool value = 0;
+tft.setCursor(90, 50);
+tft.setTextColor(RED);
+tft.setTextSize(3);
+tft.setTextWrap(false);
+tft.print("KABOOM!!");
 
 
+//initally highlights 1 player
 tft.setCursor(90, 90);
 tft.setTextColor(WHITE, MAGENTA);
 tft.setTextSize(2);
