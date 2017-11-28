@@ -37,13 +37,14 @@ Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC);
 #define CURSOR_SIZE_HEIGHT 36
 #define CURSOR_SIZE_WIDTH 27
 
+int mode = 0;
 
 
 void setup(){
 	init();
 	Serial.begin(9600);
 	tft.begin();
-	pinMode(JOY_SEL, INPUT);
+	pinMode(JOY_SEL, INPUT_PULLUP);
 	tft.setRotation(3);
 	tft.setTextWrap(false);
 	tft.fillScreen(GREEN);
@@ -74,7 +75,9 @@ bool startmenu(){
 
 	while (true){
 		int Yvalue = analogRead(JOY_VERT_ANALOG);
-		Serial.println(Yvalue);
+		if(digitalRead(JOY_SEL) == LOW){
+			break;
+		}
 
 		if (Yvalue > JOY_CENTRE + JOY_DEADZONE) {
 			tft.setCursor(90, 90);
@@ -92,7 +95,6 @@ bool startmenu(){
 		}
 
 		if (Yvalue < JOY_CENTRE - JOY_DEADZONE) {
-
 			tft.setCursor(90, 90);
 			tft.setTextColor(WHITE, MAGENTA);
 			tft.setTextSize(2);
@@ -108,12 +110,24 @@ bool startmenu(){
 		}
 
 	}
-	return 1;
+	return value;
+}
+
+void startgame(){
+	tft.fillRect(0, 48, DISPLAY_WIDTH, DISPLAY_HEIGHT-48, GREEN);
 }
 
 int main(){
 	setup();
 	bool startval = startmenu();
+
+	if(startval == 0){
+		modeSingle();
+	}
+	else{
+		//modeVs();
+	}
+
 
 	return 0;
 }
