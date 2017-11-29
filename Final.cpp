@@ -59,6 +59,9 @@ bool startmenu(){
 	tft.setTextColor(RED);
 	tft.setTextSize(3);
 	tft.print("KABOOM!!");
+	tft.setCursor(90, 150);
+	tft.setTextSize(1);
+	tft.print("Press Joystick to select");
 
 	//initally highlights 1 player
 	tft.setCursor(90, 90);
@@ -117,18 +120,18 @@ void updatePlayer(){
 	if (Xvalue < JOY_CENTRE - JOY_DEADZONE) {
 		playerX += 1;
 		playerX = constrain(playerX, 0, DISPLAY_WIDTH - PLAYER_WIDTH);
-		tft.fillRect(playerX, DISPLAY_HEIGHT - 46,
-	              PLAYER_WIDTH, PLAYER_HEIGHT, ILI9341_BLUE);
+		tft.fillRect(playerX + PLAYER_WIDTH-1, DISPLAY_HEIGHT - 46,
+	              1, PLAYER_HEIGHT, ILI9341_BLUE);
 		tft.fillRect(playerX - 1, DISPLAY_HEIGHT - 46,
-	              2, PLAYER_HEIGHT, ILI9341_GREEN);
+	              1, PLAYER_HEIGHT, ILI9341_GREEN);
 	}
 	else if (Xvalue > JOY_CENTRE + JOY_DEADZONE) {
 		playerX -= 1;
 		playerX = constrain(playerX, 0, DISPLAY_WIDTH - PLAYER_WIDTH);
 		tft.fillRect(playerX, DISPLAY_HEIGHT - 46,
-								PLAYER_WIDTH, PLAYER_HEIGHT, ILI9341_BLUE);
+								1, PLAYER_HEIGHT, ILI9341_BLUE);
 		tft.fillRect(playerX + PLAYER_WIDTH + 1, DISPLAY_HEIGHT - 46,
-								2, PLAYER_HEIGHT, ILI9341_GREEN);
+								1, PLAYER_HEIGHT, ILI9341_GREEN);
 
 	}
 
@@ -137,29 +140,33 @@ void updatePlayer(){
 int timer = 0;
 int dir = 1;
 void updateBomber(){
-	if(timer == 0){ timer = rand()/200; }
-	else{ timer--; }
+	if(timer == 0){ timer = rand()/200; } // sets random time before bomber turns around
+	else{ timer--; } // counts down timer
 	if(timer == 0 || bomberX == 0 || (bomberX == DISPLAY_WIDTH - PLAYER_WIDTH)){
-		dir = -dir;
+		dir = -dir; // switches bomber direction
 	}
-	bomberX += dir;
-	bomberX = constrain(bomberX, 0, DISPLAY_WIDTH - PLAYER_WIDTH);
-	tft.fillRect(bomberX, 16,
-							PLAYER_WIDTH, PLAYER_HEIGHT, ILI9341_BLACK);
-	tft.fillRect(bomberX + PLAYER_WIDTH + 1, 16,
-							1, PLAYER_HEIGHT, GREY);
-	tft.fillRect(bomberX - 1, 16,
-							1, PLAYER_HEIGHT, GREY);
+	bomberX += dir; // moves bomber in current direction
+	bomberX = constrain(bomberX, 0, DISPLAY_WIDTH - PLAYER_WIDTH); // constrains bomber to screen
+	tft.fillRect(bomberX, 20, // draws left most line of bomber
+							1, PLAYER_HEIGHT-4, ILI9341_BLACK);
+	tft.fillRect(bomberX + PLAYER_WIDTH, 20, // draws rightmost line of bomber
+							1, PLAYER_HEIGHT-4, ILI9341_BLACK);
+	tft.fillRect(bomberX + PLAYER_WIDTH + 1, 20, // draws background over right side
+							1, PLAYER_HEIGHT-4, GREY);
+	tft.fillRect(bomberX - 1, 20, // draws background over left side
+							1, PLAYER_HEIGHT-4, GREY);
 }
 
-#define NUM_BOMBS 100
-#define BOMB_SIZE 9
-int bombRate = 100;
-int bombX[NUM_BOMBS];
-int bombY[NUM_BOMBS];
-bool bombLife[NUM_BOMBS];
-int bombTime = bombRate;
-int bombCount = 0;
+#define NUM_BOMBS 1000 // number of bombs the bomber will drop
+#define BOMB_SIZE 9 // size of sides of bombs
+int bombRate = 25; // rate at which bombs are spawned
+int bombX[NUM_BOMBS]; // bombs x position
+int bombY[NUM_BOMBS]; // bombs y position
+bool bombLife[NUM_BOMBS]; // true if bomb is in play false  if otherwize
+int bombTime = bombRate; // timer that counts down till next bomb drop
+int bombCount = 0; // number of bombs that have been dropped so far
+int score = 0;
+int speed = 6;
 
 bool updateBombs(){
 	int over = false;
@@ -184,39 +191,65 @@ bool updateBombs(){
 				bombLife[i] = false;
 				tft.fillRect(bombX[i], bombY[i],
 			              BOMB_SIZE, BOMB_SIZE, ILI9341_GREEN);
+				score += 10;
+				tft.fillRect(200, 5,
+			              DISPLAY_WIDTH-200, 14, GREY);
+				tft.setCursor(200, 5);
+				tft.setTextColor(RED);
+				tft.setTextSize(2);
+				tft.print(score);
+				if(bombCount%100 == 99){
+					speed -= 1;
+				}
+			}
+			else if(bombY[i] > DISPLAY_HEIGHT-12){
+				over = true;
 			}
 		}
 
 
 	}
-	if(bombCount == NUM_BOMBS-1){
-		return over;
-	}
-	else{
-		return over;
-	}
+
+	return over;
 
 }
+
+
 
 void modeSingle(){
 	bool gameOver = false;
 	tft.fillRect(playerX, DISPLAY_HEIGHT - 46,
               PLAYER_WIDTH, PLAYER_HEIGHT, ILI9341_BLUE);
-	tft.fillRect(bomberX, 16,
-							PLAYER_WIDTH, PLAYER_HEIGHT, ILI9341_BLACK);
+	tft.fillRect(bomberX, 20,
+							PLAYER_WIDTH, PLAYER_HEIGHT-4, ILI9341_BLACK);
 
 	while(true){
 		updatePlayer();
 		updateBomber();
 		gameOver = updateBombs();
-		delay(1);
+		delay(speed);
 		if(gameOver){
 			break;
 		}
 	}
-
-	// game over if bomb position is below player
-
+	for(int j = 0; j < 3; j++){
+		tft.fillRect(0, 0,
+								DISPLAY_WIDTH, DISPLAY_HEIGHT, ILI9341_YELLOW);
+		tft.fillRect(0, 0,
+								DISPLAY_WIDTH, DISPLAY_HEIGHT, ILI9341_ORANGE);
+	}
+	tft.setCursor(40, 50);
+	tft.setTextColor(RED);
+	tft.setTextSize(5);
+	tft.print("KABOOM!!");
+	tft.setCursor(90, 130);
+	tft.setTextSize(3);
+	tft.print("GAME OVER");
+	tft.setCursor(40, 190);
+	tft.setTextColor(MAGENTA);
+	tft.setTextSize(1);
+	tft.print("Press RESET To Play Again");
+	while(true){}
 }
 
 int main(){
@@ -227,11 +260,11 @@ int main(){
 
 	if(startval == 0){
 		modeSingle();
+
 	}
 	else{
 		//modeVs();
 	}
-
 
 	return 0;
 }
