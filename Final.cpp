@@ -140,8 +140,11 @@ void updatePlayer(){
 int timer = 0;
 int dir = 1;
 void updateBomber(){
-	if(timer == 0){ timer = rand()/200; } // sets random time before bomber turns around
+	if(timer == 0){ timer = rand()/analogRead(13); } // sets random time before bomber turns around
 	else{ timer--; } // counts down timer
+	while(timer > 3000){
+		timer = rand()/analogRead(13);
+	}
 	if(timer == 0 || bomberX == 0 || (bomberX == DISPLAY_WIDTH - PLAYER_WIDTH)){
 		dir = -dir; // switches bomber direction
 	}
@@ -166,7 +169,7 @@ bool bombLife[NUM_BOMBS]; // true if bomb is in play false  if otherwize
 int bombTime = bombRate; // timer that counts down till next bomb drop
 int bombCount = 0; // number of bombs that have been dropped so far
 int score = 0;
-int speed = 6;
+int speed = 7;
 
 bool updateBombs(){
 	int over = false;
@@ -175,14 +178,16 @@ bool updateBombs(){
 		bombX[bombCount] = (bomberX + 4);
 		bombY[bombCount] = 48;
 		bombLife[bombCount] = true;
+		tft.fillRect(bombX[bombCount], bombY[bombCount],
+		              BOMB_SIZE, BOMB_SIZE, ILI9341_BLACK);
 		bombCount++;
 		bombTime = bombRate;
 	}
 	for(int i = 0; i < bombCount; i++){
 		if(bombLife[i]){
 			bombY[i]++;
-			tft.fillRect(bombX[i], bombY[i],
-		              BOMB_SIZE, BOMB_SIZE, ILI9341_BLACK);
+			tft.fillRect(bombX[i], bombY[i] + BOMB_SIZE - 1,
+		              BOMB_SIZE, 1, ILI9341_BLACK);
 			tft.fillRect(bombX[i], bombY[i]-1,
 			            BOMB_SIZE, 1, ILI9341_GREEN);
 
@@ -200,6 +205,7 @@ bool updateBombs(){
 				tft.print(score);
 				if(bombCount%100 == 99){
 					speed -= 1;
+					constrain(speed, 1, 7);
 				}
 			}
 			else if(bombY[i] > DISPLAY_HEIGHT-12){
@@ -245,6 +251,10 @@ void modeSingle(){
 	tft.setCursor(90, 130);
 	tft.setTextSize(3);
 	tft.print("GAME OVER");
+	tft.setCursor(40, 100);
+	tft.print("Score: ");
+	tft.setCursor(150, 100);
+	tft.print(score);
 	tft.setCursor(40, 190);
 	tft.setTextColor(MAGENTA);
 	tft.setTextSize(1);
