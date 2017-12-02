@@ -54,7 +54,7 @@ int bombY[NUM_BOMBS]; // bombs y position
 bool bombLife[NUM_BOMBS]; // true if bomb is in play false  if otherwize
 int bombTime = bombRate; // timer that counts down till next bomb drop
 int bombCount = 0; // number of bombs that have been dropped so far
-uint32_t score = 0; // player score
+uint16_t score = 0; // player score
 int dlay = 7; // starting delay between updates
 int deadBombs = 0; // counts number of bombs caught in order to reduce loop time for high bomb counts
 bool first = true; // checks it is the first bomb caught
@@ -314,19 +314,15 @@ void modeSingle(){
 	}
 }
 
-void uint32_to_serial3(uint32_t num) {
+void uint16_to_serial3(uint16_t num) {
   Serial3.write((char) (num >> 0));
   Serial3.write((char) (num >> 8));
-  Serial3.write((char) (num >> 16));
-  Serial3.write((char) (num >> 24));
 }
 
-uint32_t uint32_from_serial3() {
-  uint32_t num = 0;
-  num = num | ((uint32_t) Serial3.read()) << 0;
-  num = num | ((uint32_t) Serial3.read()) << 8;
-  num = num | ((uint32_t) Serial3.read()) << 16;
-  num = num | ((uint32_t) Serial3.read()) << 24;
+uint16_t uint16_from_serial3() {
+  uint16_t num = 0;
+  num = num | ((uint16_t) Serial3.read()) << 0;
+  num = num | ((uint16_t) Serial3.read()) << 8;
   return num;
 }
 
@@ -376,11 +372,13 @@ void modeVs(){
 		tft.print("Waiting for other player to finish...");
 
 
-		uint32_to_serial3(score);
+		uint16_to_serial3(score);
 		while(Serial3.available() == 0){}
-		uint32_t otherScore = uint32_from_serial3();
+		uint16_t otherScore = uint16_from_serial3();
+		Serial.println(otherScore);
 
-		if(otherScore > score){
+
+		if(otherScore > score){ // loser
 			tft.fillRect(0, 0,
 									DISPLAY_WIDTH, DISPLAY_HEIGHT, ILI9341_ORANGE);
 			tft.setCursor(40, 50);
@@ -391,7 +389,7 @@ void modeVs(){
 			tft.setTextSize(2);
 			tft.setCursor(10, 100);
 			tft.print("Your Score: ");
-			tft.setCursor(170, 100);
+			tft.setCursor(150, 100);
 			tft.print(score);
 			tft.setCursor(10, 130);
 			tft.print("Opponent's Score: ");
@@ -403,7 +401,7 @@ void modeVs(){
 			tft.setTextSize(1);
 			tft.print("Press RESET To Play Again");
 		}
-		else if(otherScore < score){
+		else if(otherScore < score){ // winner
 			tft.fillRect(0, 0,
 									DISPLAY_WIDTH, DISPLAY_HEIGHT, ILI9341_GREEN);
 			tft.setCursor(40, 50);
@@ -414,7 +412,7 @@ void modeVs(){
 			tft.setTextSize(2);
 			tft.setCursor(10, 100);
 			tft.print("Your Score: ");
-			tft.setCursor(170, 100);
+			tft.setCursor(150, 100);
 			tft.print(score);
 			tft.setCursor(10, 130);
 			tft.print("Opponent's Score: ");
@@ -426,16 +424,16 @@ void modeVs(){
 			tft.setTextSize(1);
 			tft.print("Press RESET To Play Again");
 		}
-		else if(otherScore == score){
+		else if(otherScore == score){ // tie-er
 			tft.fillRect(0, 0,
-									DISPLAY_WIDTH, DISPLAY_HEIGHT, ILI9341_RED);
+									DISPLAY_WIDTH, DISPLAY_HEIGHT, ILI9341_BLUE);
 			tft.setCursor(40, 50);
 			tft.setTextColor(RED);
 			tft.setTextSize(5);
 			tft.print("YOU TIED!");
 
 			tft.setTextSize(2);
-			tft.setCursor(40, 100);
+			tft.setCursor(10, 100);
 			tft.print("Your Score: ");
 			tft.setCursor(150, 100);
 			tft.print(score);
