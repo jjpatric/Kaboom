@@ -54,7 +54,7 @@ int bombY[NUM_BOMBS]; // bombs y position
 bool bombLife[NUM_BOMBS]; // true if bomb is in play false  if otherwize
 int bombTime = bombRate; // timer that counts down till next bomb drop
 int bombCount = 0; // number of bombs that have been dropped so far
-int score = 0; // player score
+uint32_t score = 0; // player score
 int dlay = 7; // starting delay between updates
 int deadBombs = 0; // counts number of bombs caught in order to reduce loop time for high bomb counts
 bool first = true; // checks it is the first bomb caught
@@ -63,6 +63,7 @@ bool first = true; // checks it is the first bomb caught
 void setup(){
 	init();
 	Serial.begin(9600);
+	Serial3.begin(9600);
 	tft.begin();
 	pinMode(JOY_SEL, INPUT_PULLUP);
 	tft.setRotation(3); // rotates to proper orientation (270 degrees CW from default)
@@ -231,12 +232,10 @@ int updateBombs(){
 	return over; // returns whether game over or not
 }
 
-
-
-void modeSingle(){
+int playGame(){
 	int gameOver = 0;
 	tft.fillRect(playerX, DISPLAY_HEIGHT - 46, // draws initial player position
-              PLAYER_WIDTH, PLAYER_HEIGHT, ILI9341_BLUE);
+							PLAYER_WIDTH, PLAYER_HEIGHT, ILI9341_BLUE);
 	tft.fillRect(bomberX, 20, // draws initial bomber position
 							PLAYER_WIDTH, PLAYER_HEIGHT-4, ILI9341_BLACK);
 	tft.setCursor(200, 5);
@@ -250,10 +249,14 @@ void modeSingle(){
 		gameOver = updateBombs();
 		delay(dlay); // creates feeling of increasing speed with smaller 'dlay'
 		if(gameOver == 1 || gameOver == 2){
-			break; // stop playing game
+			return gameOver;
 		}
 	}
-	if(gameOver == 1){
+}
+
+void modeSingle(){
+	int gameOutcome = playGame();
+	if(gameOutcome == 1){
 		for(int j = 0; j < 3; j++){ // *explosion effects*
 			tft.fillRect(0, 0,
 									DISPLAY_WIDTH, DISPLAY_HEIGHT, ILI9341_YELLOW);
@@ -283,7 +286,7 @@ void modeSingle(){
 
 		while(true){} // wait till player gathers the guts to play again
 	}
-	else if(gameOver == 2){
+	else if(gameOutcome == 2){
 		for(int j = 0; j < 3; j++){ // *explosion effects*
 			tft.fillRect(0, 0,
 									DISPLAY_WIDTH, DISPLAY_HEIGHT, ILI9341_YELLOW);
@@ -311,6 +314,146 @@ void modeSingle(){
 	}
 }
 
+void uint32_to_serial3(uint32_t num) {
+  Serial3.write((char) (num >> 0));
+  Serial3.write((char) (num >> 8));
+  Serial3.write((char) (num >> 16));
+  Serial3.write((char) (num >> 24));
+}
+
+uint32_t uint32_from_serial3() {
+  uint32_t num = 0;
+  num = num | ((uint32_t) Serial3.read()) << 0;
+  num = num | ((uint32_t) Serial3.read()) << 8;
+  num = num | ((uint32_t) Serial3.read()) << 16;
+  num = num | ((uint32_t) Serial3.read()) << 24;
+  return num;
+}
+
+void modeVs(){
+	tft.setCursor(10, 70);
+	tft.setTextColor(RED);
+	tft.setTextSize(2);
+	tft.print("Waiting on other player...");
+	tft.setCursor(10, 100);
+	tft.print("Game will begin with them");
+
+
+
+	Serial3.write(1);
+	while(Serial3.available() == 0){}
+	Serial3.read();
+
+	tft.fillRect(0, 48, DISPLAY_WIDTH, DISPLAY_HEIGHT-48, GREEN); // covers text
+
+	int gameOutcome = playGame();
+	if(gameOutcome == 1){
+		for(int j = 0; j < 3; j++){ // *explosion effects*
+			tft.fillRect(0, 0,
+									DISPLAY_WIDTH, DISPLAY_HEIGHT, ILI9341_YELLOW);
+			tft.fillRect(0, 0,
+									DISPLAY_WIDTH, DISPLAY_HEIGHT, ILI9341_ORANGE);
+		}
+		// prints out all end screen text
+
+		tft.setCursor(40, 50);
+		tft.setTextColor(RED);
+		tft.setTextSize(5);
+		tft.print("KABOOM!!");
+
+		tft.setCursor(90, 130);
+		tft.setTextSize(3);
+		tft.print("GAME OVER");
+
+		tft.setCursor(40, 100);
+		tft.print("Score: ");
+		tft.setCursor(150, 100);
+		tft.print(score);
+
+		tft.setCursor(40, 190);
+		tft.setTextColor(MAGENTA);
+		tft.setTextSize(1);
+		tft.print("Waiting for other player to finish...");
+
+
+		uint32_to_serial3(score);
+		while(Serial3.available() == 0){}
+		uint32_t otherScore = uint32_from_serial3();
+
+		if(otherScore > score){
+			tft.fillRect(0, 0,
+									DISPLAY_WIDTH, DISPLAY_HEIGHT, ILI9341_ORANGE);
+			tft.setCursor(40, 50);
+			tft.setTextColor(RED);
+			tft.setTextSize(5);
+			tft.print("YOU LOSE");
+
+			tft.setTextSize(2);
+			tft.setCursor(10, 100);
+			tft.print("Your Score: ");
+			tft.setCursor(170, 100);
+			tft.print(score);
+			tft.setCursor(10, 130);
+			tft.print("Opponent's Score: ");
+			tft.setCursor(220, 130);
+			tft.print(otherScore);
+
+			tft.setCursor(40, 190);
+			tft.setTextColor(MAGENTA);
+			tft.setTextSize(1);
+			tft.print("Press RESET To Play Again");
+		}
+		else if(otherScore < score){
+			tft.fillRect(0, 0,
+									DISPLAY_WIDTH, DISPLAY_HEIGHT, ILI9341_GREEN);
+			tft.setCursor(40, 50);
+			tft.setTextColor(RED);
+			tft.setTextSize(5);
+			tft.print("YOU WIN");
+
+			tft.setTextSize(2);
+			tft.setCursor(10, 100);
+			tft.print("Your Score: ");
+			tft.setCursor(170, 100);
+			tft.print(score);
+			tft.setCursor(10, 130);
+			tft.print("Opponent's Score: ");
+			tft.setCursor(220, 130);
+			tft.print(otherScore);
+
+			tft.setCursor(40, 190);
+			tft.setTextColor(MAGENTA);
+			tft.setTextSize(1);
+			tft.print("Press RESET To Play Again");
+		}
+		else if(otherScore == score){
+			tft.fillRect(0, 0,
+									DISPLAY_WIDTH, DISPLAY_HEIGHT, ILI9341_RED);
+			tft.setCursor(40, 50);
+			tft.setTextColor(RED);
+			tft.setTextSize(5);
+			tft.print("YOU TIED!");
+
+			tft.setTextSize(2);
+			tft.setCursor(40, 100);
+			tft.print("Your Score: ");
+			tft.setCursor(150, 100);
+			tft.print(score);
+
+			tft.setCursor(40, 190);
+			tft.setTextColor(MAGENTA);
+			tft.setTextSize(1);
+			tft.print("Press RESET To Play Again");
+		}
+		while(true){} // wait till player gathers the guts to play again
+	}
+
+
+
+
+}
+
+
 int main(){
 	setup();
 	bool startval = startmenu();
@@ -321,7 +464,7 @@ int main(){
 		modeSingle();
 	}
 	else{
-		//modeVs();
+		modeVs();
 	}
 
 	return 0;
