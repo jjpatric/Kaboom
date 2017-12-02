@@ -43,8 +43,8 @@ Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC);
 int playerX = DISPLAY_WIDTH/2 - PLAYER_WIDTH/2; // initial player position, middle of display
 int bomberX = DISPLAY_WIDTH/2 - PLAYER_WIDTH/2; // initial bomber position
 
-int timer = 0;
-int dir = -1;
+int timer = 0; // time before bomber switches direction
+int dir = -1; // current bomber direction
 
 #define NUM_BOMBS 1000 // number of bombs the bomber will drop
 #define BOMB_SIZE 9 // size of sides of bombs
@@ -177,8 +177,8 @@ void updateBomber(){
 }
 
 
-bool updateBombs(){
-	int over = false; // game over
+int updateBombs(){
+	int over = 0; // game over false as default
 	bombTime--; // decrease time till next bomb dropped
 	if(bombTime == 0){ // time to drop a bomb
 		bombX[bombCount] = (bomberX + 4); // starting position under middle of bomber
@@ -221,7 +221,10 @@ bool updateBombs(){
 				}
 			}
 			else if(bombY[i] > DISPLAY_HEIGHT-12){ // if bomb gets too low
-				over = true;                         // GAME OVER
+				over = 1;                        	   // GAME OVER
+			}
+			else if(bombCount == 990){
+				over = 2;
 			}
 		}
 	}
@@ -231,7 +234,7 @@ bool updateBombs(){
 
 
 void modeSingle(){
-	bool gameOver = false;
+	int gameOver = 0;
 	tft.fillRect(playerX, DISPLAY_HEIGHT - 46, // draws initial player position
               PLAYER_WIDTH, PLAYER_HEIGHT, ILI9341_BLUE);
 	tft.fillRect(bomberX, 20, // draws initial bomber position
@@ -246,39 +249,66 @@ void modeSingle(){
 		updateBomber();
 		gameOver = updateBombs();
 		delay(dlay); // creates feeling of increasing speed with smaller 'dlay'
-		if(gameOver){
-			break; // get outta here ya loser!
+		if(gameOver == 1 || gameOver == 2){
+			break; // stop playing game
 		}
 	}
+	if(gameOver == 1){
+		for(int j = 0; j < 3; j++){ // *explosion effects*
+			tft.fillRect(0, 0,
+									DISPLAY_WIDTH, DISPLAY_HEIGHT, ILI9341_YELLOW);
+			tft.fillRect(0, 0,
+									DISPLAY_WIDTH, DISPLAY_HEIGHT, ILI9341_ORANGE);
+		}
+		// prints out all end screen text
 
-	for(int j = 0; j < 3; j++){ // *explosion effects*
-		tft.fillRect(0, 0,
-								DISPLAY_WIDTH, DISPLAY_HEIGHT, ILI9341_YELLOW);
-		tft.fillRect(0, 0,
-								DISPLAY_WIDTH, DISPLAY_HEIGHT, ILI9341_ORANGE);
+		tft.setCursor(40, 50);
+		tft.setTextColor(RED);
+		tft.setTextSize(5);
+		tft.print("KABOOM!!");
+
+		tft.setCursor(90, 130);
+		tft.setTextSize(3);
+		tft.print("GAME OVER");
+
+		tft.setCursor(40, 100);
+		tft.print("Score: ");
+		tft.setCursor(150, 100);
+		tft.print(score);
+
+		tft.setCursor(40, 190);
+		tft.setTextColor(MAGENTA);
+		tft.setTextSize(1);
+		tft.print("Press RESET To Play Again");
+
+		while(true){} // wait till player gathers the guts to play again
 	}
-	// prints out all end screen text
+	else if(gameOver == 2){
+		for(int j = 0; j < 3; j++){ // *explosion effects*
+			tft.fillRect(0, 0,
+									DISPLAY_WIDTH, DISPLAY_HEIGHT, ILI9341_YELLOW);
+			tft.fillRect(0, 0,
+									DISPLAY_WIDTH, DISPLAY_HEIGHT, ILI9341_GREEN);
+		}
+		tft.setCursor(40, 50);
+		tft.setTextColor(RED);
+		tft.setTextSize(5);
+		tft.print("KABOOM!!");
 
-	tft.setCursor(40, 50);
-	tft.setTextColor(RED);
-	tft.setTextSize(5);
-	tft.print("KABOOM!!");
+		tft.setCursor(90, 130);
+		tft.setTextSize(3);
+		tft.print("YOU WON!");
 
-	tft.setCursor(90, 130);
-	tft.setTextSize(3);
-	tft.print("GAME OVER");
+		tft.setCursor(40, 100);
+		tft.print("Score: ");
+		tft.setCursor(150, 100);
+		tft.print(score);
 
-	tft.setCursor(40, 100);
-	tft.print("Score: ");
-	tft.setCursor(150, 100);
-	tft.print(score);
-
-	tft.setCursor(40, 190);
-	tft.setTextColor(MAGENTA);
-	tft.setTextSize(1);
-	tft.print("Press RESET To Play Again");
-
-	while(true){} // wait till player gathers the guts to play again
+		tft.setCursor(40, 190);
+		tft.setTextColor(MAGENTA);
+		tft.setTextSize(1);
+		tft.print("Press RESET To Play Again");
+	}
 }
 
 int main(){
@@ -296,4 +326,3 @@ int main(){
 
 	return 0;
 }
-
