@@ -1,0 +1,44 @@
+# Kaboom
+Joshua Patrick(1495236) and Nicholas Serrano's() Final project for CMPUT274. It is an emulation of the Atari 2600 game Kaboom recreated on an Arduino. A head-to-head mode is also included to compete with your friends for a high score.
+
+
+Notes: The scores are not properly being sent/read across the serial3 port for the loser of a head-to-head match but the winner does get the right scores so it kinda works.
+
+
+Instructions on running code:
+Plug in a single or two arduinos to seperate or the same computer. Upload the code to both arduinos using make upload in the parent directory. Play game.
+
+
+Wiring Instructions:
+
+Adafuit ILI9341:
+Board Pin <---> Arduino Pin
+===========================
+GND             GND
+Vin             5V
+3Vo             NOT CONNECTED
+CLK             52
+MISO            50
+MOSI            51
+CS              10
+D/C             9
+RST             NOT CONNECTED
+Lite            NOT CONNECTED
+Y+              A2 (analog pin)
+X+              4  (digital pin)
+Y-              5  (digital pin)
+X-              A3 (analog pin)
+IM0 - IM3       NOT CONNECTED (they expect a 3.3v signal, DON'T CONNECT!)
+CCS             6
+CD              NOT CONNECTED
+
+Joystick:
+GND <--> GND
++5V <--> 5V
+VRx <--> A1
+VRy <--> A0
+SW  <--> 2
+
+Between two arduinos:
+TX3 14 <--> RX3 15
+RX3 15 <--> TX3 14
