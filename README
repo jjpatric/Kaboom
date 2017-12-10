@@ -2,12 +2,17 @@
 Joshua Patrick(1495236) and Nicholas Serrano's() Final project for CMPUT274. It is an emulation of the Atari 2600 game Kaboom recreated on an Arduino. A head-to-head mode is also included to compete with your friends for a high score.
 
 
-Notes: The scores are not properly being sent/read across the serial3 port for the loser of a head-to-head match but the winner does get the right scores so it kinda works.
 
 
 Instructions on running code:
-Plug in a single or two arduinos to seperate or the same computer. Upload the code to both arduinos using make upload in the parent directory. Play game.
-
+-Plug in a single or two arduinos to seperate or the same computer. Upload the code to both arduinos using make upload in the parent directory. Play game.
+-Single player: Objective of game is to grab as many bombs as poosible without bombs touching the bottom of the screen. Player controls
+blue cursor on bottom of screen with horizontal movement. Contact with bomb will cause bomb to disspaear and add 10 points to score
+on top of screen. If bomb hits bottom of screen game over will be displayed along with score. To play again, hit reset on arduino
+-Two player: Select head to head in main menu and arduino will be taken to waiting screen. Once two arduinos are on waiting screen,
+game will begin and players can compete for high score. If one arduino loses first, other arduino will be able to keep playing until 
+they lose. Once game is over for both, your score and other player score will be displayed and will say if player has won or lost or if
+a tie has occured.
 
 Wiring Instructions:
 
