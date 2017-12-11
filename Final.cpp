@@ -374,6 +374,7 @@ void modeVs(){
 
 		uint16_to_serial3(score);
 		while(Serial3.available() == 0){}
+		delay(20);
 		uint16_t otherScore = uint16_from_serial3();
 		Serial.println(otherScore);
 
